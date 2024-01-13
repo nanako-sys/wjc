@@ -1,0 +1,123 @@
+var mainWindow = new Window("palette", "错层小助手"); // 创建主窗口
+mainWindow.orientation = "column";
+
+var speedtext = mainWindow.add("statictext",undefined,"速度")
+var userInput = mainWindow.add("edittext", undefined, ""); // 输入文本框
+userInput.characters = 20; // 设定文本框宽度
+
+var speedtext = mainWindow.add("statictext",undefined,"合成名")
+var CompInput = mainWindow.add("edittext",undefined,"")//输入合成文本框
+CompInput.characters = 20;
+
+
+var NLtext = mainWindow.add("statictext",undefined,"合成位数")
+var firstInput = mainWindow.add("edittext", undefined, ""); //输入图层在第几位
+firstInput.characters = 20;
+
+var confirmButton = mainWindow.add("button", undefined, "确定"); // 确定按钮
+
+
+
+
+confirmButton.onClick = function() {
+  //var inputWindow = new Window("dialog", "输入你想定位的空图层位于合成的第一位#下面的那个"); // 创建输入文本窗口
+
+  //var firstInput = inputWindow.add("edittext", undefined, ""); // 第一个输入文本框
+ // firstInput.characters = 30;
+
+  //var okButton = inputWindow.add("button", undefined, "OK"); // OK按钮
+
+  var firstText = userInput.text;
+  
+  
+  var secondText = parseInt(firstInput.text);
+  
+  var TCN = CompInput.text;
+  
+var comp = app.project.activeItem;
+  
+var selectedLayers = comp.selectedLayers;
+  
+ 
+  
+  //检查项目中是否存在输入的合成名的合成
+  
+  var targetComp = null;
+for (var i = 1; i <= app.project.numItems; i++) {
+  var item = app.project.item(i);
+  if (item instanceof CompItem && item.name === TCN) {
+    targetComp = item;
+    break;
+  }
+}
+
+// 如果未找到名为TCN的合成，则提示用户
+if (!targetComp) {
+  alert('未找到指定合成！');
+} else {
+  var comp1 = targetComp;
+  }
+ var targetLayer = comp1.layer(secondText);
+  
+  var tn = targetLayer.name;
+  //alert(tn)
+  
+  function getFrameNumber(time, frameRate) {
+  return Math.round(time * frameRate);
+}
+
+// 获取当前时间轴上的时间
+var currentTime = app.project.activeItem.time;
+
+// 获取合成的帧率
+var frameRate = app.project.activeItem.frameRate;
+
+// 获取当前时间对应的帧数
+var currentFrameNumber = getFrameNumber(currentTime, frameRate);
+
+// 输出当前时间对应的帧数
+//alert("当前时间节点的帧数为： " + currentFrameNumber);
+//给选中的图层添加一个滑块效果并给位置属性添加表达式
+  function SE(){
+// 给选定的图层添加效果
+   for(var i = 0;i < selectedLayers.length;i++){
+       var layer = selectedLayers[i];
+       var LP = layer.property("ADBE Transform Group").property("ADBE Position");
+       var addEffect = layer.property("ADBE Effect Parade").addProperty("ADBE Slider Control");
+       LLP = targetLayer.property("ADBE Transform Group").property("ADBE Position");
+       //var SV = LLP.setValue(LP.value)
+       var EX = "currentFrame = " + currentFrameNumber +  ";" + "\n"+
+                      "frameRate = 1/thisComp.frameDuration;\n" + 
+                       "np = " +
+         "comp('" + TCN + "').layer('" + tn + "').transform.position;\n" +
+                       "mnp = " +
+         "comp('" + TCN + "').layer('" + tn + "').transform.position.valueAtTime(currentFrame/frameRate);\n" +              
+         "sp = effect('滑块控制')('滑块');\n" +
+         "tp = transform.position;\n" +
+         "differ = tp[0]/mnp[0];\n" +
+         "differ2 = tp[1]/mnp[1];\n" +
+         "[np[0],np[1]]*sp - (sp-1)*mnp +[tp[0]-mnp[0],tp[1]-mnp[1]]"
+ /*var sp = thisLayer.name;
+var np = thisComp.layer("null").transform.position;
+var tp = transform.position;
+if(!isNaN(parseFloat(sp)) && isFinite(sp)){np*sp- tp*(sp-1)};
+else(transform.position)*/
+       layer.property("ADBE Effect Parade")("ADBE Slider Control")(1).setValue(firstText);
+       LP.expression = EX;
+       
+       
+       
+       
+       }
+    
+    
+    }
+  
+
+    //alert(secondText + firstText); // 弹窗显示文本
+    
+    SE();
+
+}
+
+mainWindow.show();
